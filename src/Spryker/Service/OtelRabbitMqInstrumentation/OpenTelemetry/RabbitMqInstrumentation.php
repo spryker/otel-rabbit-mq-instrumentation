@@ -34,7 +34,7 @@ class RabbitMqInstrumentation
         hook(
             class: RabbitMqAdapter::class,
             function: static::METHOD_NAME,
-            pre: function (Client $client, array $params): void {
+            pre: function (array $params): void {
                 $instrumentation = new CachedInstrumentation();
                 $request = new RequestProcessor();
 
