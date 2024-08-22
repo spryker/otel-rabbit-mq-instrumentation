@@ -138,43 +138,6 @@ class RabbitMqInstrumentation
                 $span->end();
             }
         );
-
-//        hook(
-//            class: QueueFacade::class,
-//            function: 'startWorker',
-//            pre: function (QueueFacade $queueFacade, array $params): void {
-//                $instrumentation = new CachedInstrumentation();
-//                $request = new RequestProcessor();
-//                $startTime = microtime(true);
-//
-//                $span = $instrumentation::getCachedInstrumentation()
-//                    ->tracer()
-//                    ->spanBuilder('rabbitmq-startWorker')
-//                    ->setSpanKind(SpanKind::KIND_CLIENT)
-//                    ->setAttribute(TraceAttributes::PROCESS_COMMAND, $params[0])
-//                    ->setAttribute('start_time', $startTime)
-//                    ->startSpan();
-//                $span->activate();
-//
-//                Context::storage()->attach($span->storeInContext(Context::getCurrent()));
-//            },
-//            post: function ($instance, array $params, $response, ?Throwable $exception): void {
-//                $span = Span::fromContext(Context::getCurrent());
-//
-//                if ($exception !== null) {
-//                    $span->recordException($exception);
-//                    $span->setStatus(StatusCode::STATUS_ERROR);
-//                } else {
-//                    $span->setStatus(StatusCode::STATUS_OK);
-//                }
-//                $endTime = microtime(true);
-//                $duration = $endTime - $span->getAttribute('start_time');
-//                $span->setAttribute('start_time', null);
-//                $span->setAttribute('duration', $duration);
-//
-//                $span->end();
-//            }
-//        );
         // phpcs:enable
     }
 }
