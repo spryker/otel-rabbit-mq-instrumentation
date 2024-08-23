@@ -1,7 +1,7 @@
 {
     "name": "spryker/otel-rabbit-mq-instrumentation",
     "type": "library",
-    "description": "OtelRabbitMqInstrumentation module",
+    "description": "OtelRabbitMqInstrumentation package",
     "license": "proprietary",
     "require": {
         "open-telemetry/api": "^1.0",
@@ -9,12 +9,7 @@
         "open-telemetry/sem-conv": "^1.0",
         "php": ">=8.1",
         "spryker/rabbit-mq": "dev-master",
-        "spryker/kernel": "^3.30.0",
         "spryker/opentelemetry": "dev-feature/frw-8618/master-open-telemetry"
-    },
-    "require-dev": {
-        "spryker/code-sniffer": "*",
-        "spryker/testify": "*"
     },
     "autoload": {
         "psr-4": {
@@ -26,22 +21,13 @@
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
-    "scripts": {
-        "cs-check": "phpcs -p -s --standard=vendor/spryker/code-sniffer/SprykerStrict/ruleset.xml --ignore=/tests/_data/,/_support/ src/",
-        "cs-fix": "phpcbf -p --standard=vendor/spryker/code-sniffer/SprykerStrict/ruleset.xml --ignore=/tests/_data/,/_support/ src/",
-        "phpstan": "phpstan analyze",
-        "test": "codecept build && codecept run"
-    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.0.x-dev"
         }
     },
     "config": {
-        "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        }
+        "sort-packages": true
     },
     "authors": [
         {
