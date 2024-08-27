@@ -26,22 +26,12 @@ class RabbitMqInstrumentation
     /**
      * @var string
      */
-    protected const START_TIME = 'start_time';
-
-    /**
-     * @var string
-     */
     protected const ATTRIBUTE_QUEUE_NAME = 'queue.name';
 
     /**
      * @var string
      */
     protected const HEADER_HOST = 'host';
-
-    /**
-     * @var string
-     */
-    protected const ATTRIBUTE_DURATION = 'duration';
 
     /**
      * @var string
@@ -98,22 +88,20 @@ class RabbitMqInstrumentation
             class: RabbitMqAdapter::class,
             function: $functionName,
             pre: function (RabbitMqAdapter $rabbitMqAdapter, array $params) use ($instrumentation, $spanName, $request): void {
-                $startTime = microtime(true);
 
                 $span = $instrumentation->tracer()
                     ->spanBuilder($spanName)
                     ->setSpanKind(SpanKind::KIND_CLIENT)
-                    ->setAttribute(static::START_TIME, $startTime)
                     ->setAttribute(TraceAttributes::HTTP_REQUEST_METHOD, $request->getMethod())
                     ->setAttribute(static::ATTRIBUTE_QUEUE_NAME, $params[0]);
 
                 if (static::isValidMessage($params)) {
-                    $array = json_decode($params[1][0]->getBody(), true);
-                    if (array_key_exists(EventQueueSendMessageBodyTransfer::EVENT_NAME, $array)) {
-                        $span->setAttribute(TraceAttributes::EVENT_NAME, $array[EventQueueSendMessageBodyTransfer::EVENT_NAME]);
+                    $eventQueueSendMessageBodyArray = json_decode($params[1][0]->getBody(), true);
+                    if (array_key_exists(EventQueueSendMessageBodyTransfer::EVENT_NAME, $eventQueueSendMessageBodyArray)) {
+                        $span->setAttribute(TraceAttributes::EVENT_NAME, $eventQueueSendMessageBodyArray[EventQueueSendMessageBodyTransfer::EVENT_NAME]);
                     }
-                    if (array_key_exists(EventQueueSendMessageBodyTransfer::LISTENER_CLASS_NAME, $array)) {
-                        $span->setAttribute(static::ATTRIBUTE_EVENT_LISTENER_CLASS_NAME, $array[EventQueueSendMessageBodyTransfer::LISTENER_CLASS_NAME]);
+                    if (array_key_exists(EventQueueSendMessageBodyTransfer::LISTENER_CLASS_NAME, $eventQueueSendMessageBodyArray)) {
+                        $span->setAttribute(static::ATTRIBUTE_EVENT_LISTENER_CLASS_NAME, $eventQueueSendMessageBodyArray[EventQueueSendMessageBodyTransfer::LISTENER_CLASS_NAME]);
                     }
                 }
 
@@ -122,21 +110,15 @@ class RabbitMqInstrumentation
                     ->startSpan()
                     ->activate();
             },
-            post: function ($instance, array $params, $response, ?Throwable $exception): void {
+            post: function (RabbitMqAdapter $rabbitMqAdapter, array $params, $response, ?Throwable $exception): void {
                 $span = Span::fromContext(Context::getCurrent());
 
                 if ($exception !== null) {
                     $span->recordException($exception);
                     $span->setStatus(StatusCode::STATUS_ERROR);
                 } else {
-
                     $span->setStatus(StatusCode::STATUS_OK);
                 }
-
-                $endTime = microtime(true);
-                $duration = $endTime - $span->getAttribute(static::START_TIME);
-                $span->setAttribute(static::START_TIME, null);
-                $span->setAttribute(static::ATTRIBUTE_DURATION, $duration);
 
                 $span->end();
             }
@@ -150,9 +132,13 @@ class RabbitMqInstrumentation
      */
     protected static function isValidMessage(array $params): bool
     {
-        return array_key_exists(1, $params)
-            && array_key_exists(0, $params[1])
-            && $params[1][0] instanceof QueueSendMessageTransfer
-            && is_string($params[1][0]->getBody());
+        $queueSendMessageTransfer = $params[1][0] ?? null;
+
+        if ($queueSendMessageTransfer === null) {
+            return false;
+        }
+
+        return $queueSendMessageTransfer instanceof QueueSendMessageTransfer
+            && is_string($queueSendMessageTransfer->getBody());
     }
 }
